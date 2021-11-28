@@ -18,7 +18,7 @@ public class Main {
         Line.FillInstructions();
         ArrayList<Line>lines = new ArrayList<>();
         Line line;
-        File inputFile = new File("SICXE.txt");
+        File inputFile = new File("in.txt");
         File outputFile = new File("output.txt");
         File symbolTableFile = new File("symbTable.txt");
         try
