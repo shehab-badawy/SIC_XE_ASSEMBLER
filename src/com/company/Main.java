@@ -15,10 +15,12 @@ public class Main {
         Line line;
         File inputFile = new File("SICXE.txt");
         File outputFile = new File("output.txt");
+        File symbolTableFile = new File("symbTable.txt");
         try
         {
             Scanner input = new Scanner(inputFile);
             PrintWriter output = new PrintWriter(outputFile);
+            PrintWriter symb = new PrintWriter(symbolTableFile);
             while(input.hasNext())
             {
                 line = new Line(input.nextLine());
@@ -26,8 +28,11 @@ public class Main {
             }
            for(int i=0; i < lines.size(); i++)
            {
-              output.printf("%04X ",lines.get(i).getLocation());
-
+               if(lines.get(i).isLabelAtFirst())
+               {
+                   symb.printf("%04X      %s\n",lines.get(i).getLocation(),lines.get(i).line_parts.get(0));
+               }
+               output.printf("%04X ",lines.get(i).getLocation());
                System.out.printf("%04X ",lines.get(i).getLocation());
               for (int j = 0 ; j < lines.get(i).line_parts.size() ; j++)
               {
@@ -38,6 +43,7 @@ public class Main {
               output.println();
            }
            output.close();
+           symb.close();
         }
         catch (Exception e)
         {
