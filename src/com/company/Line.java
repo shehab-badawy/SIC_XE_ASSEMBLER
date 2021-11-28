@@ -71,14 +71,14 @@ public class Line {
     }
     private void directiveCalcSize()
     {
-        if(directives[indexOFDirective]==directives[0]) // start
+        if(directives[indexOFDirective].equals(directives[0])) // start
         {
            labelAtFirst = false;
            ProgramName = line_parts.get(0);
            ProgramCounter = Integer.parseInt(line_parts.get(line_parts.size()-1)); // first location of the program
             sizeOfLine = 0;
         }
-        else if(directives[indexOFDirective]==directives[1]) // RESW
+        else if(directives[indexOFDirective].equals(directives[1])) // RESW
         {
             for(int i =0 ;i<line_parts.size();i++)
             {
@@ -88,7 +88,7 @@ public class Line {
                 }
             }
         }
-       else if(directives[indexOFDirective]==directives[2]) // RESB
+       else if(directives[indexOFDirective].equals(directives[2])) // RESB
         {
             for(int i =0 ;i<line_parts.size();i++)
             {
@@ -98,7 +98,7 @@ public class Line {
                 }
             }
         }
-       else if(directives[indexOFDirective]==directives[3]) // BYTE
+       else if(directives[indexOFDirective].equals(directives[3])) // BYTE
         {
             for(int i =0 ;i<line_parts.size();i++)
             {
@@ -119,15 +119,15 @@ public class Line {
                 }
             }
         }
-       else if(directives[indexOFDirective]==directives[4]) // WORD
+       else if(directives[indexOFDirective].equals(directives[4])) // WORD
         {
             sizeOfLine = 3;
         }
-        else if(directives[indexOFDirective]==directives[5]) // END
+        else if(directives[indexOFDirective].equals(directives[5])) // END
         {
             sizeOfLine = 0;
         }
-        else if(directives[indexOFDirective]==directives[6]) // BASE
+        else if(directives[indexOFDirective].equals(directives[6])) // BASE
         {
             sizeOfLine = 0;
             /* another action for pass2 */
