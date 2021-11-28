@@ -251,9 +251,5 @@ public class Line {
             System.out.println(e.getMessage());
             e.printStackTrace();
         }
-        for(int i =0;i<219;i++)
-        {
-            System.out.println(instructions[i].name+"    "+instructions[i].format);
-        }
     }
 }
