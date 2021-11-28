@@ -116,12 +116,31 @@ public class Line {
                         sizeOfLine = ((value.length()))/2;
 
                     }
+                    else if(value.contains(","))
+                    {
+                        String[] arrOfValues = value.split(",");
+                        sizeOfLine = arrOfValues.length;
+                    }
+                    else
+                    {
+                        sizeOfLine = 1;
+                    }
                 }
             }
         }
        else if(directives[indexOFDirective].equals(directives[4])) // WORD
         {
-            sizeOfLine = 3;
+            String value = line_parts.get(line_parts.size()-1);
+            if(value.contains(","))
+            {
+                String[] arrOfValues = value.split(",");
+                sizeOfLine = arrOfValues.length * 3 ;
+            }
+            else
+            {
+                sizeOfLine = 3;
+            }
+
         }
         else if(directives[indexOFDirective].equals(directives[5])) // END
         {
