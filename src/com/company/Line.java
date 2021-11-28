@@ -9,7 +9,7 @@ public class Line {
     private static String ProgramName;
     private int indexOFDirective;
     private static int ProgramCounter;
-    private static Instruction[] instructions = new Instruction[101];
+    private static Instruction[] instructions = new Instruction[219];
     private static final String[]  directives = {"START","RESW","RESB","BYTE","WORD","END","BASE"};
     ArrayList<String> line_parts = new ArrayList<>();
     int sizeOfLine;
@@ -36,7 +36,21 @@ public class Line {
         }
         else if(thereIsInstruction)
         {
-            sizeOfLine = instruction.format;
+            if(instruction.format > 4)
+            {
+                if(instruction.format == 5)
+                {
+                    sizeOfLine = 3;
+                }
+                else
+                {
+                    sizeOfLine = 4;
+                }
+            }
+            else
+            {
+                sizeOfLine = instruction.format;
+            }
         }
         location = ProgramCounter;
         ProgramCounter+=sizeOfLine;
@@ -123,7 +137,7 @@ public class Line {
     {
        for (int i =0 ;i<line_parts.size();i++)
        {
-           for (int j = 0; j < 101; j++)
+           for (int j = 0; j < 219; j++)
            {
                if (instructions[j].name.equals(line_parts.get(i)))
                {
@@ -168,7 +182,7 @@ public class Line {
     }
     public static void FillInstructions()
     {
-        for(int i =0;i<101;i++)
+        for(int i =0;i<219;i++)
         {
             instructions[i] = new Instruction();
         }
@@ -184,15 +198,33 @@ public class Line {
                 instructions[i].name = line.next();
                 instructions[i].format =  line.nextInt();
                 instructions[i].opcode = line.nextInt(16);
+
+
+                for(int j =i+1 ; j <i+3 ; j++)
+                {
+                    if(j==i+1)
+                    {
+                        instructions[j].format =  5;
+                        instructions[j].name = "&" + instructions[i].name;
+                        instructions[j].opcode = instructions[i].opcode;
+                    }
+                    else if(j==i+2)
+                    {
+                        instructions[j].format =  6;
+                        instructions[j].name = "$" + instructions[i].name;
+                        instructions[j].opcode = instructions[i].opcode;
+                    }
+
+                }
                 if(instructions[i].format==34)
                 {
                     instructions[i].format = 3;
-                    instructions[i+1].format = 4;
-                    instructions[i+1].name = "+" + instructions[i].name;
-                    instructions[i+1].opcode = instructions[i].opcode;
+                    instructions[i+3].format = 4;
+                    instructions[i+3].name = "+" + instructions[i].name;
+                    instructions[i+3].opcode = instructions[i].opcode;
                     i++;
                 }
-                i++;
+                i+=3;
             }
         }
         catch(Exception e)
@@ -200,9 +232,9 @@ public class Line {
             System.out.println(e.getMessage());
             e.printStackTrace();
         }
-        for(int i =0;i<101;i++)
+        for(int i =0;i<219;i++)
         {
-            System.out.println(instructions[i].name);
+            System.out.println(instructions[i].name+"    "+instructions[i].format);
         }
     }
 }
