@@ -16,7 +16,14 @@ public class Line {
     Instruction instruction;
    private int location;
    private boolean thereIsInstruction;
+   private boolean isAddressNumeric;
+   private boolean indirectAddressing;
+   private boolean immediateAddressing;
    private boolean labelAtFirst;
+   private int objectCode;
+   static ArrayList<Label> symbolTable = new ArrayList<>();
+    String Address;
+
 
 
 
@@ -54,8 +61,61 @@ public class Line {
         }
         location = ProgramCounter;
         ProgramCounter+=sizeOfLine;
+        if(labelAtFirst)
+        {
+            symbolTable.add(new Label(line_parts.get(0),location));
+        }
 
 
+    }
+    public void buildObjectCodeForLine()
+    {
+        if(instruction.format==1)
+        {
+            objectCode= instruction.opcode;
+        }
+        if(instruction.format==4)
+        {
+            objectCode = instruction.opcode>>24; // shifting the op code to its place ( most significant 6 bits )
+            // n is the 25th bit and i is the 24th
+            if(indirectAddressing)
+            {
+                set_bit(25); // it sets the n bit in the object code implicitly
+            }
+            else if(immediateAddressing)
+            {
+                set_bit(24);
+            }
+            else
+            {
+                set_bit(25);
+                set_bit(24);
+            }
+            if(Address.contains(",X"))
+            {
+                set_bit(23); // x bit
+                Address = Address.replace(",X","");
+            }
+
+            set_bit(20); // set e bit (extension bit)
+            if(isAddressNumeric)
+            {
+                objectCode |= Integer.parseInt(Address); // put the address in its 20 bits
+            }
+            else
+            {
+                for(int label = 0;label<symbolTable.size();label++)
+                {
+                    //search for the label in the symbTable
+                    if(symbolTable.get(label).labelName.equals(Address))
+                    {
+                        objectCode|= symbolTable.get(label).loctr; // put the loctr of the label in its 20 bits
+                    }
+                }
+            }
+
+
+        }
     }
 
     public int getLocation() {
@@ -154,6 +214,34 @@ public class Line {
     }
     private void checkLine()
     {
+        if(line_parts.get(line_parts.size()-1).contains("@"))
+        {
+            indirectAddressing = true;
+            immediateAddressing = false;
+             Address = line_parts.get(line_parts.size()-1).replaceFirst("@","");
+            try {
+                Integer.parseInt(Address);
+                isAddressNumeric = true;
+            }
+            catch(Exception e)
+            {
+                isAddressNumeric = false;
+            }
+        }
+        else if(line_parts.get(line_parts.size()-1).contains("#"))
+        {
+            indirectAddressing = false;
+            immediateAddressing = true;
+             Address = line_parts.get(line_parts.size()-1).replaceFirst("#","");
+            try {
+                Integer.parseInt(Address);
+                isAddressNumeric = true;
+            }
+            catch(Exception e)
+            {
+                isAddressNumeric = false;
+            }
+        }
        for (int i =0 ;i<line_parts.size();i++)
        {
            for (int j = 0; j < 219; j++)
@@ -251,5 +339,13 @@ public class Line {
             System.out.println(e.getMessage());
             e.printStackTrace();
         }
+    }
+    private void set_bit(int bitNumber)
+    {
+         objectCode|=(0b1<<bitNumber);
+    }
+    private void clr_bit(int bitNumber)
+    {
+        objectCode&= ~(0b1<<bitNumber);
     }
 }

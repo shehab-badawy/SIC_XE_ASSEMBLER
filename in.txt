@@ -42,6 +42,5 @@ WLOOP   TD     OUTPUT
         TIXR   T
         JLT    WLOOP
         RSUB
-OUTPUT  BYTE   5,6,7,8
-EXAMPLE WORD   1,2,3,5
+OUTPUT  BYTE   X'05'
         END    FIRST
