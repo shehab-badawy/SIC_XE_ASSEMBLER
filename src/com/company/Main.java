@@ -18,6 +18,7 @@ public class Main {
         File inputFile = new File("in.txt");
         File outputFile = new File("output.txt");
         File symbolTableFile = new File("symbTable.txt");
+        // First Pass Creating symbol table
         try
         {
             Scanner input = new Scanner(inputFile);
@@ -52,6 +53,38 @@ public class Main {
             System.out.println(e.getMessage());
             e.printStackTrace();
         }
+        // Second Pass
+        // building object code for each line
+        for(int i = 0 ; i < lines.size() ; i++)
+        {
+            if(lines.get(i).isThereInstruction())
+            {
+                lines.get(i).buildObjectCodeForLine();
+            }
+        }
+        File objectCodeFile = new File("objectcode.txt");
+        // writing object code in object code text
+        try
+        {
+            PrintWriter machineCode = new PrintWriter(objectCodeFile);
+            String objectCodeFormatted;
+            for(int i = 0 ; i < lines.size() ; i++)
+            {
+                if(lines.get(i).isThereInstruction())
+                {
+                    objectCodeFormatted = String.format("%0"+lines.get(i).sizeOfLine*2+"X",lines.get(i).getObjectCode());
+                    machineCode.println(objectCodeFormatted);
+                }
+            }
+            machineCode.close();
+        }
+        catch (Exception e)
+        {
+            System.out.println(e.getMessage());
+            e.printStackTrace();
+        }
+
+
 
     }
 }

@@ -5,7 +5,7 @@ FIRST   STL    RETADR
 CLOOP   +JSUB  RDREC
         LDA    LENGTH
         COMP   #0
-        JEQ    ENFIL
+        JEQ    ENDFIL
         +JSUB  WRREC
         J      CLOOP
 ENDFIL  LDA    EOF
@@ -43,4 +43,3 @@ WLOOP   TD     OUTPUT
         JLT    WLOOP
         RSUB
 OUTPUT  BYTE   X'05'
-        END    FIRST
