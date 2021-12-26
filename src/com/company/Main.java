@@ -99,14 +99,14 @@ public class Main {
         int T_index_count=0;
 
         //Getting the name of the program and concating _ to it if it's less than 6 bits
-        Name_Changed= Line.ProgramName;
+        Name_Changed= Line.getProgramName();
 
-        for (int i=0;i<6 - (Line.ProgramName.length());i++){
+        for (int i=0;i<6 - (Line.getProgramName().length());i++){
             Name_Changed=Name_Changed.concat("-");
         }
 
         //Setting the H Record
-        H_Record=H_Record+Name_Changed+"."+String.format("%0"+6+"X",lines.get(1).getLocation())+"."+String.format("%0"+6+"X",Line.ProgramCounter);
+        H_Record=H_Record+Name_Changed+"."+String.format("%0"+6+"X",lines.get(1).getLocation())+"."+String.format("%0"+6+"X",Line.getProgramCounter());
 
 
         //Setting the T Record
