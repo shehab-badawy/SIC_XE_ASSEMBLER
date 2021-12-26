@@ -6,9 +6,9 @@ import java.util.Scanner;
 
 public class Line {
     /* you can make an index for Instruction array instead of a whole instruction object*/
-    private static String ProgramName;
+    public static String ProgramName;
     private int indexOFDirective;
-    private static int ProgramCounter;
+    public static int ProgramCounter;
     private static Instruction[] instructions = new Instruction[219];
     private static final String[]  directives = {"START","RESW","RESB","BYTE","WORD","END","BASE"};
     ArrayList<String> line_parts = new ArrayList<>();
