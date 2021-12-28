@@ -18,17 +18,33 @@ public class Main {
         File inputFile = new File("in.txt");
         File outputFile = new File("output.txt");
         File symbolTableFile = new File("symbTable.txt");
+        File htmeFile = new File("htmeRecord.txt") ;
         // First Pass Creating symbol table
         try
         {
             Scanner input = new Scanner(inputFile);
             PrintWriter output = new PrintWriter(outputFile);
             PrintWriter symb = new PrintWriter(symbolTableFile);
+            String objectCodeFormatted;
             while(input.hasNext())
             {
                 line = new Line(input.nextLine());
                 lines.add(line);
             }
+
+            // Second Pass
+            // building object code for each line
+
+            for(int i = 0 ; i < lines.size() ; i++)
+            {
+                if(lines.get(i).isThereInstruction())
+                {
+                    lines.get(i).buildObjectCodeForLine();
+                }
+            }
+
+           //printing the output file
+
            for(int i=0; i < lines.size(); i++)
            {
                if(lines.get(i).isLabelAtFirst())
@@ -42,6 +58,14 @@ public class Main {
                   output.printf("%s ",lines.get(i).line_parts.get(j));
                   System.out.printf("%s ",lines.get(i).line_parts.get(j));
               }
+
+               if(lines.get(i).isThereInstruction() || lines.get(i).getIndexOFDirective()==3 || lines.get(i).getIndexOFDirective()==4)
+               {
+                   objectCodeFormatted = String.format("%0"+lines.get(i).sizeOfLine*2+"X",lines.get(i).getObjectCode());
+                   output.printf("  "+objectCodeFormatted);
+
+               }
+
                System.out.println();
               output.println();
            }
@@ -55,35 +79,36 @@ public class Main {
         }
         // Second Pass
         // building object code for each line
-        for(int i = 0 ; i < lines.size() ; i++)
-        {
-            if(lines.get(i).isThereInstruction())
-            {
-                lines.get(i).buildObjectCodeForLine();
-            }
-        }
-        File objectCodeFile = new File("objectcode.txt");
+        //for(int i = 0 ; i < lines.size() ; i++)
+        //{
+        //    if(lines.get(i).isThereInstruction())
+        //    {
+        //        lines.get(i).buildObjectCodeForLine();
+        //    }
+        //}
+        //File objectCodeFile = new File("objectcode.txt");
         // writing object code in object code text
-        try
-        {
-            PrintWriter machineCode = new PrintWriter(objectCodeFile);
-            String objectCodeFormatted;
-            for(int i = 0 ; i < lines.size() ; i++)
-            {
-                if(lines.get(i).isThereInstruction())
-                {
-                    objectCodeFormatted = String.format("%0"+lines.get(i).sizeOfLine*2+"X",lines.get(i).getObjectCode());
-                    machineCode.println(objectCodeFormatted);
-                    System.out.println(objectCodeFormatted);
-                }
-            }
-            machineCode.close();
-        }
-        catch (Exception e)
-        {
-            System.out.println(e.getMessage());
-            e.printStackTrace();
-        }
+
+        //try
+        //{
+        //    PrintWriter machineCode = new PrintWriter(objectCodeFile);
+        //   String objectCodeFormatted;
+        //    for(int i = 0 ; i < lines.size() ; i++)
+        //    {
+        //        if(lines.get(i).isThereInstruction())
+        //        {
+        //            objectCodeFormatted = String.format("%0"+lines.get(i).sizeOfLine*2+"X",lines.get(i).getObjectCode());
+        //            machineCode.println(objectCodeFormatted);
+
+        //        }
+        //    }
+        //    machineCode.close();
+        //}
+        //catch (Exception e)
+        //{
+        //    System.out.println(e.getMessage());
+        //    e.printStackTrace();
+        //}
 
 
 
@@ -111,8 +136,16 @@ public class Main {
 
         //Setting the T Record
         for(int i=0;i<lines.size();i++){
-            if(lines.get(i).isThereInstruction()){
-               String objectCodeFormatted = String.format("%0"+lines.get(i).sizeOfLine*2+"X",lines.get(i).getObjectCode());
+            if(lines.get(i).isThereInstruction()||lines.get(i).getIndexOFDirective()==3||lines.get(i).getIndexOFDirective()==4){
+
+                String objectCodeFormatted;
+                if(lines.get(i).isThereInstruction()){
+                    objectCodeFormatted = String.format("%0"+lines.get(i).sizeOfLine*2+"X",lines.get(i).getObjectCode());
+                }
+                else{
+                     objectCodeFormatted=lines.get(i).getDirValue();
+                }
+
                 if(T_Count==0){
                    T_Record.add(objectCodeFormatted);
                    T_Size+=lines.get(i).sizeOfLine;
@@ -122,14 +155,20 @@ public class Main {
                     T_Size+=lines.get(i).sizeOfLine;
                 }
                 T_Count+=lines.get(i).sizeOfLine;
-                if(T_Count+lines.get(i+1).sizeOfLine>=30||(i==lines.size()-2)){
-                    T_Record.set(T_index_count,"T."+String.format("%0"+6+"X",T_address)+"."+String.format("%0"+2+"X",T_Size)+"."+T_Record.get(T_index_count));
-                    T_address=lines.get(i).getLocation()+lines.get(i).sizeOfLine;
-                    T_Size=0;
-                    T_Count=0;
-                    T_index_count++;
+                if(!(i==lines.size()-1)){
+                    if(T_Count+lines.get(i+1).sizeOfLine>30||(i==lines.size()-1)||(!lines.get(i+1).isThereInstruction()&&(lines.get(i+1).getIndexOFDirective()==1||lines.get(i+1).getIndexOFDirective()==2))){
+                        T_Record.set(T_index_count,"T."+String.format("%0"+6+"X",T_address)+"."+String.format("%0"+2+"X",T_Size)+"."+T_Record.get(T_index_count));
+                        T_address=lines.get(i).getLocation()+lines.get(i).sizeOfLine;
+                        T_Size=0;
+                        T_Count=0;
+                        T_index_count++;
+                    }
                 }
-                if(lines.get(i).sizeOfLine==4){
+                else{
+                    T_Record.set(T_index_count,"T."+String.format("%0"+6+"X",T_address)+"."+String.format("%0"+2+"X",T_Size)+"."+T_Record.get(T_index_count));
+                }
+
+                if(lines.get(i).isThereInstruction() && lines.get(i).sizeOfLine==4){
                     String mLocationFormated = String.format("%0"+6+"X",lines.get(i).getLocation()+1);
                     M_Record.add("M."+mLocationFormated+".05.+"+Name_Changed);
                 }
@@ -146,5 +185,12 @@ public class Main {
         }
         System.out.println(E_Record);
 
+
+
+
+
+
     }
+
+
 }

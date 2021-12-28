@@ -24,6 +24,11 @@ public class Line {
    static ArrayList<Label> symbolTable = new ArrayList<>();
    private String Address;
    static private String BaseAddress;
+   private  String dirValue;
+
+    public String getDirValue() {
+        return dirValue;
+    }
 
     public static String getProgramName() {
         return ProgramName;
@@ -31,6 +36,10 @@ public class Line {
 
     public static int getProgramCounter() {
         return ProgramCounter;
+    }
+
+    public int getIndexOFDirective() {
+        return indexOFDirective;
     }
 
     public int getObjectCode() {
@@ -289,6 +298,7 @@ public class Line {
                 }
             }
         }
+
     }
 
     public int getLocation() {
@@ -342,20 +352,34 @@ public class Line {
                     {
                         value=value.substring(2,value.length()-1);
                         sizeOfLine = value.length();
+                        System.out.println(indexOFDirective);
+                        System.out.println(sizeOfLine);
+                        dirValue=value.substring(2,value.length()-1);
+                        System.out.println(value);
+
+                        //dirValueInt=Integer.parseInt(value);
+
                     }
                     else if(value.charAt(0)=='X')
                     {
                         value=value.substring(2,value.length()-1);
                         sizeOfLine = ((value.length()))/2;
 
+                        //dirValueInt=Integer.valueOf(value,16);
                     }
                     else if(value.contains(","))
                     {
                         String[] arrOfValues = value.split(",");
+                        for (int j=0;j<arrOfValues.length;j++){
+                            dirValue+=arrOfValues[j];
+                        }
                         sizeOfLine = arrOfValues.length;
+                        //dirValueInt=Integer.valueOf(dirValue,16);
                     }
                     else
                     {
+                        //dirValue=value;
+                        //dirValueInt |=Integer.valueOf(dirValue,16);
                         sizeOfLine = 1;
                     }
                 }
@@ -367,11 +391,18 @@ public class Line {
             if(value.contains(","))
             {
                 String[] arrOfValues = value.split(",");
+                for (int j=0;j<arrOfValues.length;j++){
+                    dirValue+=arrOfValues[j];
+                }
                 sizeOfLine = arrOfValues.length * 3 ;
+                //dirValueInt|=Integer.valueOf(dirValue,16);
+
             }
             else
             {
                 sizeOfLine = 3;
+                dirValue=value;
+                //dirValueInt|=Integer.valueOf(dirValue,16);
             }
 
         }
