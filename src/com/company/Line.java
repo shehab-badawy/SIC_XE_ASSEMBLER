@@ -1,6 +1,7 @@
 package com.company;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -352,12 +353,19 @@ public class Line {
                     {
                         value=value.substring(2,value.length()-1);
                         sizeOfLine = value.length();
-                        System.out.println(indexOFDirective);
-                        System.out.println(sizeOfLine);
-                        dirValue=value.substring(2,value.length()-1);
-                        System.out.println(value);
+                        dirValue="";
+                        byte [] convert=value.getBytes(StandardCharsets.US_ASCII);
+                        int z;
+                        String l= new String();
+                        for(int j=0;j<convert.length;j++){
+                            l+=convert[j];
+                            System.out.println(convert[j]);
+                        }
+                        for(int x=0;x<l.length();x+=2){
+                            z=Integer.parseInt(String.valueOf(l.charAt(x))+String.valueOf(l.charAt(x+1)));
+                            dirValue+=String.format("%02X", z);
+                        }
 
-                        //dirValueInt=Integer.parseInt(value);
 
                     }
                     else if(value.charAt(0)=='X')
@@ -365,7 +373,7 @@ public class Line {
                         value=value.substring(2,value.length()-1);
                         sizeOfLine = ((value.length()))/2;
 
-                        //dirValueInt=Integer.valueOf(value,16);
+                        dirValue=value;
                     }
                     else if(value.contains(","))
                     {
@@ -374,12 +382,13 @@ public class Line {
                             dirValue+=arrOfValues[j];
                         }
                         sizeOfLine = arrOfValues.length;
-                        //dirValueInt=Integer.valueOf(dirValue,16);
+
                     }
                     else
                     {
-                        //dirValue=value;
-                        //dirValueInt |=Integer.valueOf(dirValue,16);
+
+                        int z=Integer.parseInt(value);
+                        dirValue=String.format("%2X",z);
                         sizeOfLine = 1;
                     }
                 }
@@ -401,8 +410,8 @@ public class Line {
             else
             {
                 sizeOfLine = 3;
-                dirValue=value;
-                //dirValueInt|=Integer.valueOf(dirValue,16);
+                int z=Integer.parseInt(value);
+                dirValue=String.format("%2X",z);
             }
 
         }

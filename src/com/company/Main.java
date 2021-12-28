@@ -59,11 +59,15 @@ public class Main {
                   System.out.printf("%s ",lines.get(i).line_parts.get(j));
               }
 
-               if(lines.get(i).isThereInstruction() || lines.get(i).getIndexOFDirective()==3 || lines.get(i).getIndexOFDirective()==4)
+               if(lines.get(i).isThereInstruction())
                {
                    objectCodeFormatted = String.format("%0"+lines.get(i).sizeOfLine*2+"X",lines.get(i).getObjectCode());
                    output.printf("  "+objectCodeFormatted);
 
+               }
+               else if(lines.get(i).getIndexOFDirective()==3 || lines.get(i).getIndexOFDirective()==4){
+                   objectCodeFormatted =lines.get(i).getDirValue();
+                   output.printf("  "+objectCodeFormatted);
                }
 
                System.out.println();
