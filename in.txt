@@ -42,4 +42,6 @@ WLOOP   TD     OUTPUT
         TIXR   T
         JLT    WLOOP
         RSUB
+WORD1   WORD   16,15,15
+WORD2   WORD   15
 OUTPUT  BYTE   X'05'

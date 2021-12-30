@@ -25,7 +25,7 @@ public class Line {
    static ArrayList<Label> symbolTable = new ArrayList<>();
    private String Address;
    static private String BaseAddress;
-   private  String dirValue;
+   private  String dirValue="";
 
     public String getDirValue() {
         return dirValue;
@@ -353,7 +353,6 @@ public class Line {
                     {
                         value=value.substring(2,value.length()-1);
                         sizeOfLine = value.length();
-                        dirValue="";
                         byte [] convert=value.getBytes(StandardCharsets.US_ASCII);
                         int z;
                         String l= new String();
@@ -363,7 +362,7 @@ public class Line {
                         }
                         for(int x=0;x<l.length();x+=2){
                             z=Integer.parseInt(String.valueOf(l.charAt(x))+String.valueOf(l.charAt(x+1)));
-                            dirValue+=String.format("%02X", z);
+                            dirValue+=String.format("%X", z);
                         }
 
 
@@ -388,7 +387,7 @@ public class Line {
                     {
 
                         int z=Integer.parseInt(value);
-                        dirValue=String.format("%2X",z);
+                        dirValue=String.format("%X",z);
                         sizeOfLine = 1;
                     }
                 }
@@ -400,18 +399,21 @@ public class Line {
             if(value.contains(","))
             {
                 String[] arrOfValues = value.split(",");
+                int temp;
                 for (int j=0;j<arrOfValues.length;j++){
-                    dirValue+=arrOfValues[j];
+                    temp=Integer.parseInt(arrOfValues[j]);
+                    dirValue+=String.format("%0"+6+"X",temp);
                 }
                 sizeOfLine = arrOfValues.length * 3 ;
-                //dirValueInt|=Integer.valueOf(dirValue,16);
+
 
             }
             else
             {
                 sizeOfLine = 3;
-                int z=Integer.parseInt(value);
-                dirValue=String.format("%2X",z);
+                int valueHolder=Integer.parseInt(value);
+                dirValue = String.format("%0"+6+"X",valueHolder);
+
             }
 
         }

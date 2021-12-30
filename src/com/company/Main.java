@@ -49,13 +49,15 @@ public class Main {
            {
                if(lines.get(i).isLabelAtFirst())
                {
+
                    symb.printf("%04X      %s\n",lines.get(i).getLocation(),lines.get(i).line_parts.get(0));
                }
                output.printf("%04X ",lines.get(i).getLocation());
                System.out.printf("%04X ",lines.get(i).getLocation());
               for (int j = 0 ; j < lines.get(i).line_parts.size() ; j++)
               {
-                  output.printf("%s ",lines.get(i).line_parts.get(j));
+
+                  output.printf("%7s ",lines.get(i).line_parts.get(j));
                   System.out.printf("%s ",lines.get(i).line_parts.get(j));
               }
 
@@ -188,6 +190,8 @@ public class Main {
             System.out.println(M_Record.get(i));
         }
         System.out.println(E_Record);
+
+        System.out.println(Line.symbolTable.get(14).labelName+"   "+Line.symbolTable.get(14).loctr);
 
 
 
