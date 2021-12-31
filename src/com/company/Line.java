@@ -20,12 +20,29 @@ public class Line {
    private boolean isAddressNumeric;
    private boolean indirectAddressing;
    private boolean immediateAddressing;
+   private boolean isAddressLiteral;
    private boolean labelAtFirst;
    private int objectCode;
    static ArrayList<Label> symbolTable = new ArrayList<>();
    private String Address;
    static private String BaseAddress;
    private  String dirValue="";
+   static ArrayList<Literal> LiteralPool = new ArrayList<>();
+   static ArrayList<Literal> LiteralHolder= new ArrayList<>();
+   boolean ltorgLine;
+   private String literalValue="";
+   private int literalSize;
+   private String literalObjectCode="";
+   private String ltorgObjectCode="";
+
+    public boolean isLtorgLine() {
+        return ltorgLine;
+    }
+
+    public String getLtorgObjectCode() {
+
+        return ltorgObjectCode;
+    }
 
     public String getDirValue() {
         return dirValue;
@@ -57,11 +74,8 @@ public class Line {
         /* see if we have instruction or directive and see if there is a new label
            sets our instruction member if there is one   */
         checkLine();
-        if(!thereIsInstruction)
-        {
-            directiveCalcSize();
-        }
-        else if(thereIsInstruction)
+
+        if(thereIsInstruction)
         {
             if(instruction.format > 4)
             {
@@ -79,14 +93,54 @@ public class Line {
                 sizeOfLine = instruction.format;
             }
         }
+        else if(ltorgLine||line_parts.get(0).equals("END")){
+            LTORG();
+        }
+        else if(!thereIsInstruction)
+        {
+            directiveCalcSize();
+        }
+
         location = ProgramCounter;
         ProgramCounter+=sizeOfLine;
         if(labelAtFirst)
         {
             symbolTable.add(new Label(line_parts.get(0),location));
         }
+        if(isAddressLiteral){
+            boolean checkNewLiteral= true;
+            for(int i=0;i<LiteralPool.size();i++) {
+                if(literalValue.equals(LiteralPool.get(i).literalvalue)) {
+                    checkNewLiteral=false;
+                }
+            }
+            if(checkNewLiteral){
+
+                LiteralPool.add(new Literal(line_parts.get(line_parts.size() - 1), literalValue,literalSize,literalObjectCode));
+                LiteralHolder.add(new Literal(line_parts.get(line_parts.size() - 1), literalValue,literalSize,literalObjectCode));
+            }
+
+        }
 
 
+    }
+    private  void LTORG(){
+        for(int i=0;i<LiteralHolder.size();i++){
+            for(int j=0;j<LiteralPool.size();j++){
+
+                if(LiteralPool.get(j).literalvalue.equals(LiteralHolder.get(i).literalvalue)){
+                    LiteralPool.get(j).literalLoc=ProgramCounter+sizeOfLine;
+                }
+
+            }
+
+            sizeOfLine+=LiteralHolder.get(i).literalSize;
+            ltorgObjectCode +=LiteralHolder.get(i).literalObjectCode;
+        }
+        while (!LiteralHolder.isEmpty()){
+            LiteralHolder.remove(0);
+
+        }
     }
     public void buildObjectCodeForLine()
     {
@@ -216,6 +270,37 @@ public class Line {
                 {
                     objectCode |= Integer.parseInt(Address); // put the displacement in its 12 bits
                 }
+                else if(isAddressLiteral){
+                    for(int i=0; i<LiteralPool.size();i++){
+                        if(Address.equals(LiteralPool.get(i).literalvalue)){
+
+                            if((LiteralPool.get(i).literalLoc - (sizeOfLine+location)) <= 2047 && (LiteralPool.get(i).literalLoc - (sizeOfLine+location)) >=-2048)
+                            {
+
+                                set_bit(13);
+                                objectCode |= (LiteralPool.get(i).literalLoc - (sizeOfLine+location))&(0xfff);
+
+                            }
+                            else
+                            {
+                                for (int j = 0; j < symbolTable.size(); j++)
+                                {
+
+                                    //search for the label in the symbTable
+                                    if (symbolTable.get(j).labelName.equals(BaseAddress))
+                                    {
+
+                                        set_bit(14);
+                                        objectCode |= (LiteralPool.get(i).literalLoc - symbolTable.get(j).loctr )&(0xfff);
+                                        break;
+                                    }
+                                }
+                            }
+
+                        }
+
+                    }
+                }
                 else
                 {
                     for (int label = 0; label < symbolTable.size(); label++)
@@ -224,8 +309,8 @@ public class Line {
                         if (symbolTable.get(label).labelName.equals(Address))
                         {
                             // condition to see if it is pc relative or base
-                            System.out.printf("label loctr = %X    PC = %X\n", symbolTable.get(label).loctr , sizeOfLine+location);
-                            System.out.printf("disp = %X    \n", symbolTable.get(label).loctr - (sizeOfLine+location));
+                            //System.out.printf("label loctr = %X    PC = %X\n", symbolTable.get(label).loctr , sizeOfLine+location);
+                            //System.out.printf("disp = %X    \n", symbolTable.get(label).loctr - (sizeOfLine+location));
                             if((symbolTable.get(label).loctr - (sizeOfLine+location)) <= 2047 && (symbolTable.get(label).loctr - (sizeOfLine+location)) >=-2048)
                             {
                                 set_bit(13);
@@ -284,6 +369,16 @@ public class Line {
                 if (isAddressNumeric)
                 {
                     objectCode |= Integer.parseInt(Address); // put the address in its 20 bits
+                }
+                else if (isAddressLiteral){
+                    for (int i = 0; i < LiteralPool.size(); i++) {
+                        //search for the label in the symbTable
+
+                        if (Address.equals(LiteralPool.get(i).literalvalue)) {
+                            objectCode |= LiteralPool.get(i).literalLoc; // put the location of the literal in its 20 bits
+                            break;
+                        }
+                    }
                 }
                 else
                 {
@@ -352,6 +447,7 @@ public class Line {
                     if(value.charAt(0)=='C')
                     {
                         value=value.substring(2,value.length()-1);
+
                         sizeOfLine = value.length();
                         byte [] convert=value.getBytes(StandardCharsets.US_ASCII);
                         int z;
@@ -444,10 +540,58 @@ public class Line {
             }
         }
         else if(line_parts.get(line_parts.size()-1).contains("#"))
-        {
-            indirectAddressing = false;
+        {   indirectAddressing = false;
             immediateAddressing = true;
             Address = line_parts.get(line_parts.size()-1).replaceFirst("#","");
+            try {
+                Integer.parseInt(Address);
+                isAddressNumeric = true;
+            }
+            catch(Exception e)
+            {
+                isAddressNumeric = false;
+            }
+        }
+        else if (line_parts.get(line_parts.size()-1).contains("=")){
+            isAddressLiteral = true;
+            indirectAddressing = false;
+            immediateAddressing = false;
+            literalValue = line_parts.get(line_parts.size()-1);
+            Address = literalValue;
+            if(literalValue.charAt(1)=='C')
+            {
+                String value=literalValue.substring(3,literalValue.length()-1);
+                literalSize = value.length();
+                byte [] convert=value.getBytes(StandardCharsets.US_ASCII);
+                int z;
+                String l= new String();
+                for(int j=0;j<convert.length;j++){
+                    l+=convert[j];
+
+                }
+                for(int x=0;x<l.length();x+=2){
+                    z=Integer.parseInt(String.valueOf(l.charAt(x))+String.valueOf(l.charAt(x+1)));
+                    literalObjectCode+=String.format("%X", z);
+                }
+
+
+            }
+            else if(literalValue.charAt(1)=='X')
+            {
+                String value=literalValue.substring(3,literalValue.length()-1);
+                literalSize = ((value.length()))/2;
+
+                literalObjectCode=value;
+            }
+
+            else
+            {
+
+                int value=Integer.parseInt(literalValue.substring(1,literalValue.length()-1));
+                literalObjectCode=String.format("%0"+6+"X",value);
+                literalSize = 3;
+            }
+
             try {
                 Integer.parseInt(Address);
                 isAddressNumeric = true;
@@ -513,6 +657,10 @@ public class Line {
                    return;
                }
            }
+       }
+       if(line_parts.get(0).equals("LTORG")||line_parts.get(0).equals("ltorg")){
+           thereIsInstruction=false;
+           ltorgLine=true;
        }
     }
     public static void FillInstructions()
