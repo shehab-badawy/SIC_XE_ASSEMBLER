@@ -64,6 +64,10 @@ public class Line {
         return objectCode;
     }
 
+    public int getLiteralSize() {
+        return literalSize;
+    }
+
     public Line(String line)
     {
         Scanner InputLine = new Scanner(line);
@@ -125,6 +129,7 @@ public class Line {
 
     }
     private  void LTORG(){
+
         for(int i=0;i<LiteralHolder.size();i++){
             for(int j=0;j<LiteralPool.size();j++){
 
@@ -135,7 +140,14 @@ public class Line {
             }
 
             sizeOfLine+=LiteralHolder.get(i).literalSize;
-            ltorgObjectCode +=LiteralHolder.get(i).literalObjectCode;
+
+            if(i==LiteralHolder.size()-1){
+                ltorgObjectCode +=LiteralHolder.get(i).literalObjectCode;
+            }
+            else {
+                ltorgObjectCode +=LiteralHolder.get(i).literalObjectCode+".";
+            }
+
         }
         while (!LiteralHolder.isEmpty()){
             LiteralHolder.remove(0);
@@ -466,7 +478,13 @@ public class Line {
                     else if(value.charAt(0)=='X')
                     {
                         value=value.substring(2,value.length()-1);
-                        sizeOfLine = ((value.length()))/2;
+                        if (value.length()%2!=0){
+                           sizeOfLine = (value.length())/2+1;
+                        }
+                        else {
+                            sizeOfLine = ((value.length()))/2;
+                        }
+
 
                         dirValue=value;
                     }
@@ -579,9 +597,19 @@ public class Line {
             else if(literalValue.charAt(1)=='X')
             {
                 String value=literalValue.substring(3,literalValue.length()-1);
-                literalSize = ((value.length()))/2;
+                if (value.length()%2!=0){
+                    literalSize = ((value.length()))/2+1;
+                }
+                else {
+                    literalSize = ((value.length()))/2;
+                }
+                if(value.length()%2!=0){
+                    literalObjectCode="0"+value;
+                }
+                else{
+                    literalObjectCode=value;
+                }
 
-                literalObjectCode=value;
             }
 
             else

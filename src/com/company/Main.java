@@ -19,6 +19,7 @@ public class Main {
         File outputFile = new File("output.txt");
         File symbolTableFile = new File("symbTable.txt");
         File htmeFile = new File("htmeRecord.txt") ;
+        File literalPool = new File ("literalPool.txt");
         // First Pass Creating symbol table
         try
         {
@@ -149,7 +150,7 @@ public class Main {
 
         //Setting the T Record
         for(int i=0;i<lines.size();i++){
-            if(lines.get(i).isThereInstruction()||lines.get(i).getIndexOFDirective()==3||lines.get(i).getIndexOFDirective()==4||i==lines.size()-1){
+            if(lines.get(i).isThereInstruction()||lines.get(i).getIndexOFDirective()==3||lines.get(i).getIndexOFDirective()==4||i==lines.size()-1||lines.get(i).isLtorgLine()){
 
                 String objectCodeFormatted;
                 if(lines.get(i).isThereInstruction()){
@@ -157,10 +158,15 @@ public class Main {
                 }
                 else if(lines.get(i).getIndexOFDirective()==3||lines.get(i).getIndexOFDirective()==4){
                      objectCodeFormatted=lines.get(i).getDirValue();
+                     if(objectCodeFormatted.length()%2!=0){
+                         objectCodeFormatted="0"+objectCodeFormatted;
+                     }
+
                 }
                 else if(lines.get(i).isLtorgLine()){
+
                     objectCodeFormatted=lines.get(i).getLtorgObjectCode();
-                    System.out.println(objectCodeFormatted);
+
                 }
                 else if(i==lines.size()-1){
                     objectCodeFormatted=lines.get(i).getLtorgObjectCode();
@@ -231,6 +237,22 @@ public class Main {
             e.printStackTrace();
         }
 
+
+
+        try{
+            PrintWriter literalWriter = new PrintWriter(literalPool);
+            for (int i=0;i<Line.LiteralPool.size();i++){
+                literalWriter.printf("%6s",Line.LiteralPool.get(i).literalName);
+                literalWriter.printf("%6s",Line.LiteralPool.get(i).literalLoc);
+                literalWriter.println("    "+Line.LiteralPool.get(i).literalvalue);
+            }
+            literalWriter.close();
+        }
+        catch (Exception e)
+        {
+            System.out.println(e.getMessage());
+            e.printStackTrace();
+        }
 
     }
 
