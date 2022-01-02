@@ -282,7 +282,8 @@ public class Line {
                 {
                     objectCode |= Integer.parseInt(Address); // put the displacement in its 12 bits
                 }
-                else if(isAddressLiteral){
+                else if(isAddressLiteral)
+                {
                     for(int i=0; i<LiteralPool.size();i++){
                         if(Address.equals(LiteralPool.get(i).literalvalue)){
 
@@ -401,6 +402,178 @@ public class Line {
                         {
                             objectCode |= symbolTable.get(label).loctr; // put the loctr of the label in its 20 bits
                             break;
+                        }
+                    }
+                }
+            }
+            else if(instruction.format == 5)
+            {
+                objectCode = instruction.opcode<<16; //moving op code to most 6 significant bits
+                if(instruction.name.equals("RSUB"))
+                {
+                    set_bit(17);
+                    set_bit(16);
+                    return;
+                }
+
+                if (Address.contains(",X"))
+                {
+                    set_bit(15); // x bit
+                    Address = Address.replace(",X", "");
+                }
+                if (isAddressNumeric)
+                {
+                    objectCode |= Integer.parseInt(Address); // put the displacement in its 12 bits
+                }
+                else if(isAddressLiteral)
+                {
+                    for(int i=0; i<LiteralPool.size();i++){
+                        if(Address.equals(LiteralPool.get(i).literalvalue)){
+
+                            if((LiteralPool.get(i).literalLoc - (sizeOfLine+location)) <= 2047 && (LiteralPool.get(i).literalLoc - (sizeOfLine+location)) >=-2048)
+                            {
+
+                                set_bit(13);
+                                objectCode |= (LiteralPool.get(i).literalLoc - (sizeOfLine+location))&(0xfff);
+                                if((LiteralPool.get(i).literalLoc - (sizeOfLine+location))<0)
+                                {
+                                    set_bit(16);
+                                }
+
+                            }
+                            else
+                            {
+                                for (int j = 0; j < symbolTable.size(); j++)
+                                {
+
+                                    //search for the label in the symbTable
+                                    if (symbolTable.get(j).labelName.equals(BaseAddress))
+                                    {
+
+                                        set_bit(14);
+                                        objectCode |= (LiteralPool.get(i).literalLoc - symbolTable.get(j).loctr )&(0xfff);
+                                        break;
+                                    }
+                                }
+                            }
+
+                        }
+
+                    }
+                }
+                else
+                {
+                    for (int label = 0; label < symbolTable.size(); label++)
+                    {
+                        //search for the label in the symbTable
+                        if (symbolTable.get(label).labelName.equals(Address))
+                        {
+                            // condition to see if it is pc relative or base
+                            //System.out.printf("label loctr = %X    PC = %X\n", symbolTable.get(label).loctr , sizeOfLine+location);
+                            //System.out.printf("disp = %X    \n", symbolTable.get(label).loctr - (sizeOfLine+location));
+                            if((symbolTable.get(label).loctr - (sizeOfLine+location)) <= 2047 && (symbolTable.get(label).loctr - (sizeOfLine+location)) >=-2048)
+                            {
+                                set_bit(13);
+                                objectCode |= (symbolTable.get(label).loctr - (sizeOfLine+location))&(0xfff);
+                            }
+                            else
+                            {
+                                for (int i = 0; i < symbolTable.size(); i++)
+                                {
+                                    //search for the label in the symbTable
+                                    if (symbolTable.get(i).labelName.equals(BaseAddress))
+                                    {
+                                        set_bit(14);
+                                        objectCode |= (symbolTable.get(label).loctr - symbolTable.get(i).loctr )&(0xfff);
+                                        break;
+                                    }
+                                }
+                            }
+                            break;
+                        }
+                    }
+                }
+                // F1 is the 17th bit and F2 is the 16th
+                if((objectCode&0xfff)%2==0)
+                {
+                    set_bit(17);
+                }
+                if((objectCode&0xfff)==0)
+                {
+                    set_bit(12);
+                }
+            }
+            else if(instruction.format==6)
+            {
+                objectCode = instruction.opcode;
+                objectCode = objectCode<<24; // shifting the op code to its place ( most significant 6 bits )
+                if(instruction.name.equals("+RSUB"))
+                {
+                    set_bit(25);
+                    set_bit(24);
+                    return;
+                }
+                // n is the 25th bit and i is the 24th
+                if (indirectAddressing)
+                {
+                    set_bit(25); // it sets the n bit in the object code implicitly
+
+                }
+                else if (immediateAddressing)
+                {
+                    set_bit(24);
+                }
+                else
+                {
+                    set_bit(25);
+                    set_bit(24);
+                }
+                if (Address.contains(",X"))
+                {
+                    set_bit(23); // x bit
+                    Address = Address.replace(",X", "");
+                }
+                if (isAddressNumeric)
+                {
+                    objectCode |= Integer.parseInt(Address); // put the address in its 20 bits
+                }
+                else if (isAddressLiteral){
+                    for (int i = 0; i < LiteralPool.size(); i++) {
+                        //search for the label in the symbTable
+
+                        if (Address.equals(LiteralPool.get(i).literalvalue)) {
+                            objectCode |= LiteralPool.get(i).literalLoc; // put the location of the literal in its 20 bits
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    for (int label = 0; label < symbolTable.size(); label++)
+                    {
+                        //search for the label in the symbTable
+                        if (symbolTable.get(label).labelName.equals(Address))
+                        {
+                            objectCode |= symbolTable.get(label).loctr; // put the loctr of the label in its 20 bits
+                            break;
+                        }
+                    }
+                }
+                if((objectCode&0xfffff)%2!=0)
+                {
+                    set_bit(22);
+                }
+                if((objectCode&0xfffff)!=0)
+                {
+                    set_bit(21);
+                }
+                for (int label = 0 ; label<symbolTable.size();label++)
+                {
+                    if(symbolTable.get(label).labelName.equals(BaseAddress))
+                    {
+                        if((objectCode&0xfffff)!=symbolTable.get(label).loctr)
+                        {
+                            set_bit(20);
                         }
                     }
                 }
